@@ -3,6 +3,8 @@ const nodes : number = 5
 class HalfCircleEndStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
     context : CanvasRenderingContext2D
+    halfCircleEnd : HalfCircleEnd = new HalfCircleEnd()
+    animator : Animator = new Animator()
 
     initCanvas() {
         this.canvas.width = w
@@ -18,7 +20,14 @@ class HalfCircleEndStage {
 
     handleTap() {
         this.canvas.onmousedown = () => {
-
+            this.halfCircleEnd.startUpdating(() => {
+                this.animator.start(() => {
+                    this.render()
+                    this.halfCircleEnd.update(() => {
+                        this.animator.stop()
+                    })
+                })
+            })
         }
     }
 
