@@ -16,6 +16,8 @@ class HalfCircleEndStage {
     render() {
         this.context.fillStyle = '#BDBDBD'
         this.context.fillRect(0, 0, w, h)
+        this.context.fillStyle = '#FFC107'
+        this.halfCircleEnd.draw(this.context)
     }
 
     handleTap() {
@@ -45,8 +47,9 @@ class State {
     prevScale : number = 0
 
     update(cb : Function) {
-        this.scale += 0.1 * this.prevScale
-        if (Math.abs(this.prevScale - this.scale) > 1) {
+        this.scale += 0.1 * this.dir
+        //console.log(this.scale)
+        if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
             this.dir = 0
             this.prevScale = this.scale
@@ -119,28 +122,31 @@ class HCENode {
     draw(context : CanvasRenderingContext2D) {
         const gap : number = h / (nodes + 1)
         const size : number = gap / 3
-        context.fillStyle = '#FFC107'
         context.save()
-        context.translate(w/2, this.i * gap + gap)
+        context.translate(w/2 + (w/2 - size) * this.state.scale, this.i * gap + gap)
+        //context.fillRect(0, -size, 2 * size, 2 * size)
+        console.log(`${w/2}, ${this.i * gap + gap}`)
+
         for(var i = 0; i < 2; i++) {
+            const sf : number = 1 - 2  * (i % 2)
             context.save()
-            context.scale(1 - 2 * (i%2), 0)
-            context.save()
-            context.translate((w/2 - size/2) * this.state.scale, 0)
-            context.rotate(Math.PI * this.state.scale)
+            context.translate((w/2 - size) * this.state.scale * sf, 0)
+            context.rotate(-Math.PI * this.state.scale * sf)
             context.beginPath()
-            for (var j = -90; j <= 90; j++) {
-                const x = (size/2) *  Math.cos(j * Math.PI/180), y = (size/2) * Math.sin(j * Math.PI/180)
+
+            for (var j = 90 * sf; j <= 90 * sf + 180; j++) {
+                const x = (size) *  Math.cos(j * Math.PI/180), y = (size) * Math.sin(j * Math.PI/180)
                 if (j == -90) {
                     context.moveTo(x, y)
                 } else {
                     context.lineTo(x, y)
                 }
+                //console.log(`${x}, ${y}`)
             }
             context.fill()
             context.restore()
-            context.restore()
         }
+        //console.log(this)
         context.restore()
         if (this.next) {
             this.next.draw(context)
@@ -149,11 +155,12 @@ class HCENode {
 }
 
 class HalfCircleEnd {
-    curr : HCENode = new HCENode(0)
+    root : HCENode = new HCENode(0)
+    curr : HCENode = this.root
     dir : number = 1
 
     draw(context : CanvasRenderingContext2D) {
-        this.curr.draw(context)
+        this.root.draw(context)
     }
 
     update(cb : Function) {
